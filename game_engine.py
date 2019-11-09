@@ -2,8 +2,8 @@ import random
 from collections import deque
 
 ROUND_DEBUG = True
-HAND_DEBUG = True
-TRICK_DEBUG = True
+HAND_DEBUG = False
+TRICK_DEBUG = False
 
 class GameEngine(object):
 
@@ -29,26 +29,24 @@ class GameEngine(object):
         """
         Play one round. Rounds consist of multiple hands.
         """
-        is_tied = True
-        someone_won = False
-
-        while not someone_won or is_tied:
+        num_winners = 0
+        while num_winners != 1:
             # Play Hand.
             self.play_hand()
 
-            if ROUND_DEBUG:
-                print("$$$$$$$$$$$$$$$$$$$$$$   HAND SCORES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-                for p in self.players:
-                    print(p.get_name() + " => " + str(p.score()))
-            
             # Update Scores.
+            if ROUND_DEBUG: print("\n___________CURRENT_SCORE___________________________")
+
             for idx, p in enumerate(self.players):
                 self.player_scores[idx] = self.player_scores[idx] + p.score()
+                if ROUND_DEBUG: print(p.get_name() + " => " + str(self.player_scores[idx]))
+
 
             # Check if the game should end
-            non_zero_scores = list(filter(lambda x: x > 0, self.player_scores))
-            is_tied = len(non_zero_scores) > len(set(non_zero_scores))
-            someone_won = any(map(lambda ps: ps >= self.winning_score, self.player_scores))
+            num_winners = 0
+            for ps in self.player_scores:
+                if ps >= self.winning_score:
+                    num_winners = num_winners + 1
 
         # Sort players by score
         unsorted_scoreboard = zip(self.player_scores, self.player_names)
@@ -103,26 +101,19 @@ class GameEngine(object):
         """
         lead_player = ordered_players[0].get_name()
 
-        if TRICK_DEBUG:
-            print("\n----------------------------------")
-            print("Lead Trick Player: " + lead_player)
+        if TRICK_DEBUG: print("\n----------------------------------\nLead Trick Player: " + lead_player)
 
         trick = []
         for o_p in ordered_players:
             card_played = o_p.play_card(lead_player, trick)
             trick.append(card_played)
 
-            if TRICK_DEBUG:
-                print("\t " + o_p.get_name() + " played: " + card_played)
-
-        if TRICK_DEBUG:
-            print("Trick Played: " + str(trick))
+            if TRICK_DEBUG: print("\t " + o_p.get_name() + " played: " + card_played)
 
         winner_idx = self.trick_winner(trick)
         winner = ordered_players[winner_idx].get_name()
 
-        if TRICK_DEBUG:
-            print("Trick Winner: " + winner)
+        if TRICK_DEBUG: print("Trick Winner: " + winner)
 
         for p in self.players:
             p.collect_trick(lead_player, winner, trick)
