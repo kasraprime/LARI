@@ -1,7 +1,7 @@
 import random
 from collections import deque
 
-ROUND_DEBUG = False
+ROUND_DEBUG = True
 HAND_DEBUG = True
 TRICK_DEBUG = True
 
@@ -37,10 +37,9 @@ class GameEngine(object):
             self.play_hand()
 
             if ROUND_DEBUG:
-                print("HAND SCORES:")
+                print("$$$$$$$$$$$$$$$$$$$$$$   HAND SCORES $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
                 for p in self.players:
                     print(p.get_name() + " => " + str(p.score()))
-                print("============================================\n")
             
             # Update Scores.
             for idx, p in enumerate(self.players):
@@ -64,11 +63,6 @@ class GameEngine(object):
         self.deck.shuffle()
         hands = self.deck.deal()
 
-        if HAND_DEBUG:
-            print("Hands that will be dealt:")
-            print(hands)
-            print("=========================================================================\n")
-
         # Clear player hands.
         for p in self.players:
             p.new_hand(self.player_names)
@@ -82,12 +76,10 @@ class GameEngine(object):
             p.add_cards_to_hand(hands[idx])
 
         if HAND_DEBUG:
-            print("Player hands:")
+            print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~Player Hands~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
             for p in self.players:
                 print(p.get_name())
                 print(p.get_hand())
-                print("\n")
-            print("=========================================================================\n")
 
         # Order players based on who starts.
         ordered_players = deque(self.players)
@@ -96,11 +88,6 @@ class GameEngine(object):
 
         for i in range(0,13):
             winner = self.play_trick(ordered_players)
-
-            if HAND_DEBUG:
-                print("Winner of round " + str(i) + " ==> " + winner)
-                print("=========================================================================\n")
-
             win_idx = -1
             for idx, p in enumerate(self.players):
                 if p.get_name() == winner:
@@ -117,6 +104,7 @@ class GameEngine(object):
         lead_player = ordered_players[0].get_name()
 
         if TRICK_DEBUG:
+            print("\n----------------------------------")
             print("Lead Trick Player: " + lead_player)
 
         trick = []
@@ -138,6 +126,12 @@ class GameEngine(object):
 
         for p in self.players:
             p.collect_trick(lead_player, winner, trick)
+
+        if TRICK_DEBUG:
+            print("Trick Scores:")
+            for p in self.players:
+                print("\t" + p.get_name() + " => " + str(p.get_tricks_won()))
+            print("---------------------------------")
 
         return winner
         

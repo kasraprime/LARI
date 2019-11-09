@@ -55,9 +55,6 @@ class BasePlayer(object):
                 if our_place < 1: # We won!
                     self._score = 11
             
-            self.tricks_won = {}
-            self.tricks_played = 0
-
     def get_name(self):
         """
         Returns a string of the agent's name
@@ -69,6 +66,9 @@ class BasePlayer(object):
         Returns a list of two character strings reprsenting cards in the agent's hand
         """
         return self.hand
+
+    def get_tricks_won(self):
+        return self.tricks_won[self.name]
 
     def new_hand(self, names):
         """
