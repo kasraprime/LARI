@@ -103,8 +103,20 @@ class PlayerRandom(BasePlayer):
         super().__init__()
 
     def play_card(self, lead_player, trick):
-        random.shuffle(self.hand)
-        return self.hand.pop()
+        if lead_player == self.name: 
+            random.shuffle(self.hand)
+            card = self.hand.pop()
+        else:
+            suit = trick[0][1:]
+            random.shuffle(self.hand)
+            x = 0
+            for i in range(len(self.hand)):
+                if self.hand[i][1:] == suit:
+                    x = i
+                    break
+            card = self.hand.pop(x)
+            
+        return card
         
 class PlayerLARIJr(BasePlayer):
 
