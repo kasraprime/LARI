@@ -124,6 +124,9 @@ class GameEngine(object):
             card_played = o_p.play_card(lead_player, trick)
             trick.append(card_played)
 
+            if TRICK_DEBUG:
+                print("\t " + o_p.get_name() + " played: " + card_played)
+
         if TRICK_DEBUG:
             print("Trick Played: " + str(trick))
 
