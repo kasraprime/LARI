@@ -2,7 +2,8 @@ import random
 from collections import deque
 
 ROUND_DEBUG = False
-HAND_DEBUG = False
+HAND_DEBUG = True
+TRICK_DEBUG = True
 
 class GameEngine(object):
 
@@ -102,7 +103,7 @@ class GameEngine(object):
 
             win_idx = -1
             for idx, p in enumerate(self.players):
-                if p.get_name == winner:
+                if p.get_name() == winner:
                     win_idx = idx
 
             ordered_players = deque(self.players)
@@ -114,13 +115,23 @@ class GameEngine(object):
         Play a trick and return the name of the winner.
         """
         lead_player = ordered_players[0].get_name()
+
+        if TRICK_DEBUG:
+            print("Lead Trick Player: " + lead_player)
+
         trick = []
         for o_p in ordered_players:
             card_played = o_p.play_card(lead_player, trick)
             trick.append(card_played)
 
+        if TRICK_DEBUG:
+            print("Trick Played: " + str(trick))
+
         winner_idx = self.trick_winner(trick)
         winner = ordered_players[winner_idx].get_name()
+
+        if TRICK_DEBUG:
+            print("Trick Winner: " + winner)
 
         for p in self.players:
             p.collect_trick(lead_player, winner, trick)
