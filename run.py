@@ -1,6 +1,7 @@
 import sys
 from game_engine import GameEngine
 from player_lari import PlayerRandom
+from player_lari import PlayerPassiveLARI
 
 WINNING_SCORE = 100
 
@@ -23,7 +24,7 @@ def run():
     gm = GameEngine(WINNING_SCORE)
 
     # Create players
-    player_1 = PlayerRandom()
+    player_1 = PlayerPassiveLARI()
     player_2 = PlayerRandom()
     player_3 = PlayerRandom()
     player_4 = PlayerRandom()
