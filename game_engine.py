@@ -165,10 +165,13 @@ class Deck():
                 return b
             elif a_suit == b_suit:
                 return a if a_rank_val > b_rank_val else b
-            else:
+            else: # when b doesn't have neither the palyed suit nor any trumps, therefore a is more powerful
                 return a
 
     def get_rank_value(self, r):
+        """
+        this function gives the value (strength) of each card
+        """
         if r == 'A':
             return 14
         elif r == 'K':
