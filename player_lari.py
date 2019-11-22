@@ -244,7 +244,7 @@ class PlayerPassiveLARI(BasePlayer):
         else:
             #get the suits for the trick
             lead_suit = get_suit(trick[0])
-            #get all the vards in out hand that matches the suit of the trick
+            #get all the cards in our hand that matches the suit of the trick
             valid_cards = set(self.hand).intersection(get_all_cards_suit(lead_suit))
             #if we do not have any cards of that suit play the lowest card in our hand
             if len(valid_cards) == 0:
