@@ -61,6 +61,31 @@ def get_max_card(cards):
 	return max_card
 
 
+class State():
+    def __init__(self,hand,played_cards,others_hand,current_trick,hand_scores,total_scores):
+        self.hand=hand
+        self.played_cards=played_cards
+        self.others_hand=others_hand
+        self.current_trick=current_trick
+        self.hand_scores=hand_scores
+        self.total_scores=total_scores
+
+
+class Node():
+    def __init__(self,state,parent,num_visited,num_won):
+        self.state=state
+        self.parent=parent
+        self.num_visited=num_visited
+        self.num_won=num_won
+
+    def Make_Child_Node(self,parent,hand,played_cards,others_hand,current_trick,hand_scores,total_scores):        
+        child_state=State(hand,played_cards,others_hand,current_trick,hand_scores,total_scores)
+        child=Node(child_state,parent,1,0)
+        return child
+
+
+
+
 class Player(object):
     """
     Project Player interface.
@@ -205,10 +230,9 @@ class PlayerRandom(BasePlayer):
                 if self.hand[i][1:] == suit:
                     x = i
                     break
-            card = self.hand.pop(x)
-            
+            card = self.hand.pop(x)            
         return card
-        
+
 class PlayerLARIJr(BasePlayer):
 
     def __init__(self):
