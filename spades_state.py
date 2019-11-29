@@ -18,7 +18,7 @@ class SpadesState:
         self.trick = trick
         #dictionary of all players hands
         self.hands = hands
-        #dict of player_name => tricks_won
+        #dict of player_name => tricks_won: number of tricks won by each player in one hand
         self.tricks_won = tricks_won
 
     #get random cards for rest of players not already played
@@ -38,10 +38,12 @@ class SpadesState:
                 # First person playing can play any card.
                 valid_cards = self.hands[self.players[j]]
             else:
+                # playing the leading suit if possible
                 cards = self.hands[self.players[j]]
                 lead_suit = get_suit(self.trick[0])
                 valid_cards = list(set(cards).intersection(get_all_cards_suit(lead_suit)))
                 if len(valid_cards) == 0:
+                    # Play any card if the leading suit is not in hand
                     valid_cards = self.hands[self.players[j]]
 
             # Cap number of branches.
@@ -63,10 +65,11 @@ class SpadesState:
                 if c in new_state.hands[p]:
                     new_state.hands[p].remove(c)
 
-        #calculate resulting hand, use action( finished trick )
+        #calculate resulting hand, use action( finished trick ), and find the winner of current trick
         lead_suit = get_suit(action[0])
         max_rank = get_rank(action[0])
         winning_player_indx = 0
+        # TODO: for the next phase we should consider braking with spades as well
         for i, c in enumerate(action):
             if get_suit(c) == lead_suit and get_rank(c) > max_rank:
                 max_rank = get_rank(c)
