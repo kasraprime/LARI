@@ -21,7 +21,7 @@ class SpadesState:
         #dict of player_name => tricks_won: number of tricks won by each player in one hand
         self.tricks_won = tricks_won
 
-    #get random cards for rest of players not already played
+    #get random cards for rest of players not already played (including our player)
     #return all finished tricks
     def getPossibleActions(self):
         s = []
