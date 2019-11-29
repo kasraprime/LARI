@@ -1,5 +1,7 @@
 from collections import deque
+from copy import copy
 import operator
+import random
 
 
 def get_all_cards_suit(suit):
@@ -91,3 +93,85 @@ def order_players(clockwise_players, lead_player):
     return list(ordered_players)
 
 
+class Deck():
+    """
+    Deck of cards.
+    """
+    def __init__(self):
+        deck = []
+        for s in self.get_suits():
+            for r in self.get_ranks():
+                deck.append(r+s)
+        self.deck = deck
+
+    def shuffle(self):
+        random.shuffle(self.deck)
+
+    def remove_cards(self, cards):
+        self.deck = list(set(self.deck) - set(cards))
+
+    def get_constrained_cards(self, constraints, num):
+        hearts = True #constraints['H']
+        spades = True #constraints['S']
+        clubs = True #constraints['C']
+        diamonds = True #constraints['D']
+        possible_cards = list(copy(self.deck))
+        if not hearts:
+            possible_cards = list(filter(lambda c: c[1] != 'H', possible_cards))
+        if not spades:
+            possible_cards = list(filter(lambda c: c[1] != 'S', possible_cards))
+        if not clubs:
+            possible_cards = list(filter(lambda c: c[1] != 'C', possible_cards))
+        if not diamonds:
+            possible_cards = list(filter(lambda c: c[1] != 'D', possible_cards))
+
+        random.shuffle(possible_cards)
+        return possible_cards[:num]
+
+    def compare_cards(self, a, b):
+        a_suit = a[-1:]
+        a_rank_val = self.get_rank_value(a[0:-1])
+        b_suit = b[-1:]
+        b_rank_val = self.get_rank_value(b[0:-1])
+
+        if a_suit == b_suit: 
+            return a if a_rank_val > b_rank_val else b
+        else:
+            return a
+
+    def get_rank_value(self, r):
+        """
+        this function gives the value (strength) of each card
+        """
+        if r == 'A':
+            return 14
+        elif r == 'K':
+            return 13
+        elif r == 'Q':
+            return 12
+        elif r == 'J':
+            return 11
+        elif r == 'T':
+            return 10
+        else:
+            return int(r)
+
+    def deal(self):
+        """
+        Split deck into 4 equal hands.
+        """
+        hands = []
+        hands.append(self.deck[0:13])
+        hands.append(self.deck[13:26])
+        hands.append(self.deck[26:39])
+        hands.append(self.deck[39:52])
+        return hands
+
+    def get_suits(self):
+        return ["S", "H", "D", "C"]
+
+    def get_ranks(self):
+        return ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
+
+    def __str__(self):
+        return str(self.deck)

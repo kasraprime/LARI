@@ -1,12 +1,11 @@
 import random
 import operator
+from copy import copy
 from spades_state import SpadesState
 from mcts import mcts
 from util import *
-from copy import copy
-from game_engine import Deck
 
-MCTS_SEARCH_TIME = 12000
+MCTS_SEARCH_TIME = 1200
 NUM_SIMS = 5
 DEBUG_JR = False
 
