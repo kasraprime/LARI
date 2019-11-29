@@ -8,7 +8,7 @@ from game_engine import Deck
 
 MCTS_SEARCH_TIME = 12000
 NUM_SIMS = 5
-DEBUG_JR = True
+DEBUG_JR = False
 
 class Player(object):
     """
@@ -203,7 +203,7 @@ class PlayerLARIJr(BasePlayer):
 
         # TODO: Thoughts on adding hard coded rules here?
         #   - If we're last to play, play the lowest card that can win
-
+        #   - Play Ace of Spades if we have it
         player_order = order_players(self.player_names, lead)
         idx = player_order.index(self.name)
         best_plays = []
