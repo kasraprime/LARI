@@ -1,9 +1,12 @@
 import random
 from collections import deque
+from copy import copy
 
 ROUND_DEBUG = False
 HAND_DEBUG = True
 TRICK_DEBUG = True
+
+TRUMP = False
 
 class GameEngine(object):
 
@@ -149,23 +152,50 @@ class Deck():
     def shuffle(self):
         random.shuffle(self.deck)
 
+    def remove_cards(self, cards):
+        self.deck = list(set(self.deck) - set(cards))
+
+    def get_constrained_cards(self, constraints, num):
+        hearts = True #constraints['H']
+        spades = True #constraints['S']
+        clubs = True #constraints['C']
+        diamonds = True #constraints['D']
+        possible_cards = list(copy(self.deck))
+        if not hearts:
+            possible_cards = list(filter(lambda c: c[1] != 'H', possible_cards))
+        if not spades:
+            possible_cards = list(filter(lambda c: c[1] != 'S', possible_cards))
+        if not clubs:
+            possible_cards = list(filter(lambda c: c[1] != 'C', possible_cards))
+        if not diamonds:
+            possible_cards = list(filter(lambda c: c[1] != 'D', possible_cards))
+
+        random.shuffle(possible_cards)
+        return possible_cards[:num]
+
     def compare_cards(self, a, b):
         a_suit = a[-1:]
         a_rank_val = self.get_rank_value(a[0:-1])
         b_suit = b[-1:]
         b_rank_val = self.get_rank_value(b[0:-1])
 
-        if a_suit == 'S':
-            if b_suit == 'S':
+        if TRUMP:
+            if a_suit == 'S':
+                if b_suit == 'S':
+                    return a if a_rank_val > b_rank_val else b
+                else:
+                    return a
+            else:
+                if b_suit == 'S':
+                    return b
+                elif a_suit == b_suit:
+                    return a if a_rank_val > b_rank_val else b
+                else: # when b doesn't have neither the palyed suit nor any trumps, therefore a is more powerful
+                    return a
+        else:
+            if a_suit == b_suit: 
                 return a if a_rank_val > b_rank_val else b
             else:
-                return a
-        else:
-            if b_suit == 'S':
-                return b
-            elif a_suit == b_suit:
-                return a if a_rank_val > b_rank_val else b
-            else: # when b doesn't have neither the palyed suit nor any trumps, therefore a is more powerful
                 return a
 
     def get_rank_value(self, r):
