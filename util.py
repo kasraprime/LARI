@@ -1,3 +1,6 @@
+from collections import deque
+import operator
+
 
 def get_all_cards_suit(suit):
     if suit == "D":
@@ -57,3 +60,34 @@ def get_max_card(cards):
 			max_card = c
 		
 	return max_card
+
+def get_player_score(tricks_won, player_name):
+    # Sort players from highest to lowest number of tricks won
+    sorted_tricks_won = sorted(tricks_won.items(), key=operator.itemgetter(1), reverse=True)
+    our_place = list(map(lambda x: x[0], sorted_tricks_won)).index(player_name)
+    # Get places.
+    first_place_name = sorted_tricks_won[0][0]
+    second_place_name = sorted_tricks_won[1][0]
+    third_place_name = sorted_tricks_won[2][0]
+    fourth_place_name = sorted_tricks_won[3][0]
+
+    if tricks_won[first_place_name] == tricks_won[second_place_name]: # Tie
+        if tricks_won[second_place_name] == tricks_won[third_place_name]: # Three way tie
+            if our_place < 3: # We tied with two others.
+                return 3
+        else:
+            if our_place < 2: # We tied with someone else.
+                return 5
+    else: # Single winner
+        if our_place < 1: # We won!
+            return 11
+
+    return 0
+
+def order_players(clockwise_players, lead_player):
+    idx = clockwise_players.index(lead_player)
+    ordered_players = deque(clockwise_players)
+    ordered_players.rotate(-idx)
+    return list(ordered_players)
+
+

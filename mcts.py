@@ -5,6 +5,8 @@ import math
 import random
 
 
+# PULLED FROM: https://github.com/pbsinclair42/MCTS
+
 def randomPolicy(state):
     while not state.isTerminal():
         try:
@@ -13,7 +15,6 @@ def randomPolicy(state):
             raise Exception("Non-terminal state has no possible actions: " + str(state))
         state = state.takeAction(action)
     return state.getReward()
-
 
 class treeNode():
     def __init__(self, state, parent):

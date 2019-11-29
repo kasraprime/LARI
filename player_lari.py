@@ -1,90 +1,14 @@
 import random
 import operator
+from spades_state import SpadesState
+from mcts import mcts
+from util import *
+from copy import copy
+from game_engine import Deck
 
-def get_all_cards_suit(suit):
-    if suit == "D":
-        cards = {"2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD"}
-    elif suit == "S":
-        cards = {"2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "TS", "JS", "QS", "KS", "AS"}
-    elif suit == "H":
-        cards = {"2H", "3H", "4H", "5H", "6H", "7H", "8H", "9H", "TH", "JH", "QH", "KH", "AH"}
-    elif suit == "C":
-        cards = {"2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"}
-    else:
-        cards = set()
-
-    return cards
-
-def get_suit(card):
-    return card[1:]
-
-def get_rank(card):
-    rank = 0
-    r = card[:1]
-    if (r == "A"):
-        rank = 14
-    elif (r == "K"):
-        rank = 13
-    elif (r == "Q"):
-        rank = 12
-    elif (r == "J"):
-        rank = 11
-    elif (r == "T"):
-        rank == 10
-    else:
-        rank = int(r)
-    
-    return rank
-
-def get_min_card(cards):
-	min_val = get_rank(list(cards)[0])
-	min_card = list(cards)[0]
-	
-	for c in cards:
-		rank = get_rank(c)
-		if rank < min_val:
-			min_val = rank
-			min_card = c
-		
-	return min_card
-
-def get_max_card(cards):
-	max_val = get_rank(list(cards)[0])
-	max_card = list(cards)[0]
-	
-	for c in cards:
-		rank = get_rank(c)
-		if rank > max_val:
-			max_val = rank
-			max_card = c
-		
-	return max_card
-
-
-class State():
-    def __init__(self,hand,played_cards,others_hand,current_trick,hand_scores,total_scores):
-        self.hand=hand
-        self.played_cards=played_cards
-        self.others_hand=others_hand
-        self.current_trick=current_trick
-        self.hand_scores=hand_scores
-        self.total_scores=total_scores
-
-
-class Node():
-    def __init__(self,state,parent,num_visited,num_won):
-        self.state=state
-        self.parent=parent
-        self.num_visited=num_visited
-        self.num_won=num_won
-
-    def Make_Child_Node(self,parent,hand,played_cards,others_hand,current_trick,hand_scores,total_scores):        
-        child_state=State(hand,played_cards,others_hand,current_trick,hand_scores,total_scores)
-        child=Node(child_state,parent,1,0)
-        return child
-
-
-
+MCTS_SEARCH_TIME = 12000
+NUM_SIMS = 5
+DEBUG_JR = True
 
 class Player(object):
     """
@@ -152,24 +76,7 @@ class BasePlayer(Player):
 
         # One hand is 13 tricks.
         if self.tricks_played == 13:
-            sorted_tricks_won = sorted(self.tricks_won.items(), key=operator.itemgetter(1), reverse=True)
-            our_place = list(map(lambda x: x[0], sorted_tricks_won)).index(self.name)
-            # Get places.
-            first_place_name = sorted_tricks_won[0][0]
-            second_place_name = sorted_tricks_won[1][0]
-            third_place_name = sorted_tricks_won[2][0]
-            fourth_place_name = sorted_tricks_won[3][0]
-
-            if self.tricks_won[first_place_name] == self.tricks_won[second_place_name]: # Tie
-                if self.tricks_won[second_place_name] == self.tricks_won[third_place_name]: # Three way tie
-                    if our_place < 3: # We tied with two others.
-                        self._score = 3
-                else:
-                    if our_place < 2: # We tied with someone else.
-                        self._score = 5
-            else: # Single winner
-                if our_place < 1: # We won!
-                    self._score = 11
+            self._score = get_player_score(self.tricks_won, self.name)
             
     def get_name(self):
         """
@@ -220,6 +127,13 @@ class PlayerRandom(BasePlayer):
 
     def play_card(self, lead_player, trick):
         if lead_player == self.name: 
+            try:
+                idx = self.hand.index('2C')
+                card = self.hand.pop(idx)
+                return card
+            except ValueError:
+                pass
+
             random.shuffle(self.hand)
             card = self.hand.pop()
         else:
@@ -237,17 +151,111 @@ class PlayerLARIJr(BasePlayer):
 
     def __init__(self):
         self.name = "L.A.R.I JR."
+        self.cards_played = []
+        self.oppo_hand_info = {}
         super().__init__()
 
     def get_name(self):
         return self.name
 
+    def gen_hands(self, lead, trick):
+        player_order = order_players(self.player_names, lead)
+        deck = Deck()
+
+        # Remove cards that we know opponents can't have.
+        deck.remove_cards(self.hand)
+        deck.remove_cards(self.cards_played)
+        deck.remove_cards(trick)
+        hands = {}
+
+        # TODO: CONSTRAINED SIM HANDS IS NOT WORKING.
+        # CURRENT APPROACH CAN RESULT IN NOT ALL CARDS BEING DEALT DUE TO
+        # CONSTRAINTS NOT BEING SATISFIED IN THE CORRECT ORDER.
+        # HACk SOLUTION IS TO REMOVE CONSTRAINTS IN GET_CONSTR_CARDS()
+        our_idx = player_order.index(self.name)
+        for idx, p in enumerate(player_order):
+            if idx < our_idx:
+                hand_info = self.oppo_hand_info[p]
+                # Players before us have contributed to the current trick.
+                hand_size = len(self.hand) - 1
+                hand = deck.get_constrained_cards(hand_info, hand_size)
+                deck.remove_cards(hand)
+                hands[p] = hand
+            elif idx > our_idx:
+                hand_info = self.oppo_hand_info[p]
+                hand_size = len(self.hand)
+                hand = deck.get_constrained_cards(hand_info, hand_size)
+                deck.remove_cards(hand)
+                hands[p] = hand
+            else:
+                hands[p] = self.hand
+            
+        return hands
+
     def play_card(self, lead, trick):
-        # TODO: Implmemt
-        pass
+        # If we have a 2C, play it (as it should always be played first).
+        try:
+            idx = self.hand.index('2C')
+            card = self.hand.pop(idx)
+            return card
+        except ValueError:
+            pass
+
+        # TODO: Thoughts on adding hard coded rules here?
+        #   - If we're last to play, play the lowest card that can win
+
+        player_order = order_players(self.player_names, lead)
+        idx = player_order.index(self.name)
+        best_plays = []
+        if DEBUG_JR: print("--------------_ENTERING THE MONTE CARLO ZONE----------------")
+
+        # TODO: Parallelize this for better performance
+        for x in range(NUM_SIMS):
+            sim_hands = self.gen_hands(lead, trick)
+            for sh in sim_hands.items():
+                if DEBUG_JR:
+                    print("Player: " + sh[0] + " => " + str(sh[1]))
+
+            root_state = SpadesState(self.name, player_order, trick, sim_hands, copy(self.tricks_won))
+
+            _mcts = mcts(timeLimit=MCTS_SEARCH_TIME)
+            best_action = _mcts.search(initialState=root_state)
+
+            best_play = best_action[idx]
+            if DEBUG_JR: print("\tBEST PLAY: " + best_play)
+            best_plays.append(best_play)
+
+        if DEBUG_JR: print("Best plays => " + str(best_plays)) 
+        best_play = random.choice(best_plays)    
+        if DEBUG_JR: print("Best Play Chosen => " + best_play)
+        self.hand.pop(self.hand.index(best_play))
+        return best_play
+
+    def new_hand(self, names):
+        super().new_hand(names)
+        for n in names:
+            # Can the opponent have cards of the suits in their hand?
+            self.oppo_hand_info[n] = {'S': True, 'C': True, 'H': True, 'D': True}
+
+    def _clear(self):
+        self.cards_played = []
+        self.oppo_hand_info = {}
+        super()._clear()
 
     def collect_trick(self, lead, winner, trick):
-        # TODO: Implement
+        # Update which cards have been played
+        self.cards_played = self.cards_played + trick
+
+        # Update information about opponent hands (if possible).
+        player_order = order_players(self.player_names, lead)
+        lead_suit = get_suit(trick[0])
+        for idx, c in enumerate(trick[1:]):
+            # TODO: when/if trump is introduced, this will need to update.
+            if get_suit(c) != lead_suit:
+                oppo_player = player_order[idx]
+                # AHA! They no longer have any cards of lead_suit.
+                self.oppo_hand_info[oppo_player][lead_suit] = False
+
         super().collect_trick(lead, winner, trick)
         pass
 
@@ -262,6 +270,13 @@ class PlayerPassiveLARI(BasePlayer):
         return self.name
 
     def play_card(self, lead, trick):
+        try:
+            idx = self.hand.index('2C')
+            card = self.hand.pop(idx)
+            return card
+        except ValueError:
+            pass
+
         #if we are leading the trick, play the lowest card in our hand
         if lead == self.get_name():
             card = get_min_card(self.hand)
@@ -297,6 +312,5 @@ class PlayerPassiveLARI(BasePlayer):
         return card
 
     def collect_trick(self, lead, winner, trick):
-        # TODO: Implement
         super().collect_trick(lead, winner, trick)
         pass
