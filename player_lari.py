@@ -5,7 +5,7 @@ from spades_state import SpadesState
 from mcts import mcts
 from util import *
 
-MCTS_SEARCH_TIME = 500
+MCTS_SEARCH_TIME = 3000
 DEBUG_JR = False
 
 class Player(object):
@@ -59,7 +59,7 @@ class Player(object):
 
 	def remove_cards_from_player(self, player, cards):
 		"""
-		Takes a player name (str), and a list of cards
+		Takes a player name, and a list of cards
 		Removes the cards from the player's hand
 		"""
 		for p, h in self.hands.items():
@@ -96,10 +96,6 @@ class Player(object):
 			if p != self.name:
 				self.remove_cards_from_player(p, trick)
 			
-		if DEBUG_JR: 
-			for p in self.player_names:
-				print("PLAYER ",p," HAND: ", self.hands[p])
-
 		# TODO: Thoughts on adding hard coded rules here?
 		#   - If we're last to play, play the lowest card that can win
 		#   - Play Ace of Spades if we have it
@@ -128,7 +124,7 @@ class Player(object):
 		for idx, c in enumerate(trick[1:]):
 			if get_suit(c) != lead_suit:
 				# AHA! They no longer have any cards of lead_suit.
-				if DEBUG_JR: print(self.player_names[idx], " out of suit ", lead_suit)
+				if DEBUG_JR: print(self.player_names[idx], " OUT OF SUIT ", lead_suit)
 				self.remove_cards_from_player(idx, get_all_cards_suit(lead_suit))
 				
 		self.tricks_played = self.tricks_played + 1

@@ -4,7 +4,7 @@ from player_randomlari import Player as PlayerRandom
 from player_lari import Player as PlayerPassiveLARI
 from player_larijr import Player as PlayerLARIJr
 
-WINNING_SCORE = 1000
+WINNING_SCORE = 100
 
 def run():
     args = sys.argv[1:]

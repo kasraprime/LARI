@@ -5,7 +5,7 @@ from util import *
 
 ROUND_DEBUG = True
 HAND_DEBUG = True
-TRICK_DEBUG = False
+TRICK_DEBUG = True
 
 TRUMP = False
 

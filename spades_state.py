@@ -52,10 +52,7 @@ class SpadesState:
 			
 		# Cartesian product of all players' possible plays.
 		actions = list(itertools.product(*s))
-		
-		if DEBUG: print("STATE:", self.hands)
-		if DEBUG: print("POSSIBLE ACTIONS:", actions)
-		
+			
 		return actions
 
 	def takeAction(self, action):
