@@ -110,9 +110,11 @@ class Player(object):
 		best_action = _mcts.search(initialState=root_state)
 
 		if DEBUG_JR: print("BEST ACTION:", best_action[idx])
+
+		#Remove card to be played from out hand
+		self.hands[self.name].remove(best_action[idx])
 		
 		return best_action[idx]
-
 
 	def collect_trick(self, lead, winner, trick):
 		# Update which cards have been played
