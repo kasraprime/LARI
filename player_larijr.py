@@ -14,7 +14,7 @@ class Player(object):
 	Project Player interface.
 	"""
 	def __init__(self):
-		self.name = "L.A.R.I Jr" + str(random.randint(1,9999999))
+		self.name = "L.A.R.I Jr"
 		self._clear()
 
 		
