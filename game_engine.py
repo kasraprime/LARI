@@ -3,7 +3,7 @@ from collections import deque
 from copy import copy
 from util import *
 
-ROUND_DEBUG = False
+ROUND_DEBUG = True
 HAND_DEBUG = True
 TRICK_DEBUG = True
 
