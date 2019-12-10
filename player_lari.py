@@ -112,17 +112,16 @@ class Player(object):
 		# Use two brains to decide: LARI junior just chooses the highest card to play
 		# Comparing LARI junior's result with LARI to choose the best one
 		from player_larijr import Player as Player_Junior
-		Junior=Player_Junior()
-		#Junior.new_hand(self.player_names)
-		#Junior.hand=self.hands[self.name]
+		Junior=Player_Junior()						
 		Junior.hand=deepcopy(self.hands[self.name])		
+		Junior.name="L.A.R.I."
 		junior_best=Junior.play_card(lead, trick)
 		deck = Deck()
 		best_of_best=deck.compare_cards(best_action[idx],junior_best)		
 		#Remove card to be played from out hand
 		self.hands[self.name].remove(best_of_best)
 		return best_of_best
-		#return best_action[idx]
+
 
 	def collect_trick(self, lead, winner, trick):
 		if winner == self.get_name():

@@ -70,7 +70,7 @@ class Player(object):
 			pass
 
 		#if we are leading the trick, play the lowest card in our hand
-		if lead == 'L.A.R.I.':
+		if lead == self.name:
 			card = get_min_card(self.hand)
 		else:
 			#get the suits for the trick
