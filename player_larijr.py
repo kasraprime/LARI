@@ -61,7 +61,7 @@ class Player(object):
 		"""
 		self.hand.extend(cards)
 
-	def play_card(self, lead, trick):
+	def play_card(self, lead, trick):	
 		try:
 			idx = self.hand.index('2C')
 			card = self.hand.pop(idx)
@@ -70,7 +70,7 @@ class Player(object):
 			pass
 
 		#if we are leading the trick, play the lowest card in our hand
-		if lead == self.get_name():
+		if lead == 'L.A.R.I.':
 			card = get_min_card(self.hand)
 		else:
 			#get the suits for the trick
